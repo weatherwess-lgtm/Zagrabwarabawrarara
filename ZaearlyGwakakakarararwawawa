@@ -204,8 +204,8 @@ AboutSection:Section({
     FontWeight = Enum.FontWeight.Medium,
 })
 local FarmingTab = Window:Tab({ Title = "Farming", Icon = "skull" })
-local SBRTab = Window:Tab({ Title = "SBR", Icon = "sliders-horizontal" })
 local StandFarmTab = Window:Tab({ Title = "StandFarm", Icon = "star" })
+local SBRTab = Window:Tab({ Title = "SBR", Icon = "sliders-horizontal" })
 local SellingTab = Window:Tab({ Title = "Selling", Icon = "dollar-sign" })
 local VisualTab = Window:Tab({ Title = "Visual", Icon = "eye" })
 local AdjustTab = Window:Tab({ Title = "Adjust", Icon = "sliders-horizontal" })
@@ -702,143 +702,94 @@ local function findLuckyArrow()
     return nearest
 end
 local function normalFarm()
-    while normalFarmOn do
-        if not player.Character or not player.Character:FindFirstChild("Humanoid") or player.Character.Humanoid.Health <= 0 then
-            task.wait(1)
+while normalFarmOn do
+if not player.Character or not player.Character:FindFirstChild("Humanoid") or player.Character.Humanoid.Health <= 0 then
+wait(1)
             continue
-        end
-        
-        local foundItem = false
-        while true do
-            local v = findLuckyArrow() or findNearestItem(selectedFarmItems)
-            if not v then break end
-            foundItem = true
-            
-            local itemPart = v:FindFirstChildOfClass("MeshPart") or v:FindFirstChildOfClass("Part")
-            local proxPrompt = v:FindFirstChild("ProximityPrompt")
-            
-            if not itemPart or not proxPrompt then break end
-            
-            if instantPickup then
-                -- Travel to item instantly
-                instantTravelTo(itemPart)
-                
-                -- Wait 1 second AFTER arriving before picking up
-                task.wait(1)
-                
-                -- Verify item still exists after waiting
-                if itemPart and itemPart.Parent and proxPrompt and proxPrompt.Parent then
-                    checkAndSellMax()
-                    fireproximityprompt(proxPrompt, 0, true)
-                end
-            else
-                -- Normal travel method
-                travelTo(itemPart)
-                task.wait(0.2)
-                
-                local hrp = player.Character.HumanoidRootPart
-                if (itemPart.Position - hrp.Position).Magnitude < 5 then
-                    checkAndSellMax()
-                    fireproximityprompt(proxPrompt, 4)
-                    task.wait(0.1)
-                    
-                    -- Try again if not picked up
-                    if v:IsDescendantOf(game.Workspace) then
-                        fireproximityprompt(proxPrompt, 4)
-                    end
-                end
-            end
-            
+end
+local foundItem = false
+while true do
+    local v = findLuckyArrow() or findNearestItem(selectedFarmItems)
+    if not v then break end
+    foundItem = true
+    local itemPart = v:FindFirstChildOfClass("MeshPart") or v:FindFirstChildOfClass("Part")
+    local proxPrompt = v:FindFirstChild("ProximityPrompt")
+      if instantPickup then
+        instantTravelTo(itemPart)
+        wait(1) -- Wait 1 second after arriving before picking up
+        checkAndSellMax()
+        fireproximityprompt(proxPrompt, 0, true)
+    else
+        travelTo(itemPart)
+        wait(0.2)
+        local hrp = player.Character.HumanoidRootPart
+        if (itemPart.Position - hrp.Position).Magnitude < 5 then
             checkAndSellMax()
-            task.wait(0.2)
+            fireproximityprompt(proxPrompt, 4)
+            wait(0.1) -- Wait briefly
+            if v:IsDescendantOf(game.Workspace) then
+                fireproximityprompt(proxPrompt, 4) -- Try again if not picked
+            end
         end
-        
-        if not foundItem then
-            teleportToRandom()
-        end
-        
-        task.wait(0.2)
     end
+    checkAndSellMax()
+    wait(0.2) -- Wait after pickup
+end
+if not foundItem then
+    teleportToRandom()
+end
+wait(0.2)
+end
 end
 local function afkFarm()
-    while afkFarmOn do
-        if not player.Character or not player.Character:FindFirstChild("Humanoid") or player.Character.Humanoid.Health <= 0 then
-            task.wait(1)
+while afkFarmOn do
+if not player.Character or not player.Character:FindFirstChild("Humanoid") or player.Character.Humanoid.Health <= 0 then
+wait(1)
             continue
-        end
-        
-        local roaming = true
-        while roaming and afkFarmOn do
-            if not player.Character or not player.Character:FindFirstChild("Humanoid") or player.Character.Humanoid.Health <= 0 then
-                break
+end
+local roaming = true
+while roaming and afkFarmOn do
+if not player.Character or not player.Character:FindFirstChild("Humanoid") or player.Character.Humanoid.Health <= 0 then
+break
+end
+local foundItem = false
+local v = findLuckyArrow() or findNearestItem(selectedFarmItems)
+if v then
+    foundItem = true
+    roaming = false
+    local itemPart = v:FindFirstChildOfClass("MeshPart") or v:FindFirstChildOfClass("Part")
+    local proxPrompt = v:FindFirstChild("ProximityPrompt")
+     if instantPickup then
+        instantTravelTo(itemPart)
+        wait(1) -- Wait 1 second after arriving before picking up
+        checkAndSellMax()
+        fireproximityprompt(proxPrompt, 0, true)
+    else
+        travelTo(itemPart)
+        wait(0.2)
+        local hrp = player.Character.HumanoidRootPart
+        if (itemPart.Position - hrp.Position).Magnitude < 5 then
+            checkAndSellMax()
+            fireproximityprompt(proxPrompt, 4)
+            wait(0.1) -- Wait briefly
+            if v:IsDescendantOf(game.Workspace) then
+                fireproximityprompt(proxPrompt, 4) -- Try again if not picked
             end
-            
-            local foundItem = false
-            local v = findLuckyArrow() or findNearestItem(selectedFarmItems)
-            
-            if v then
-                foundItem = true
-                roaming = false
-                
-                -- Force cancel: immediately go to item with priority
-                if forceCancelEnabled then
-                    local itemPart = v:FindFirstChildOfClass("MeshPart") or v:FindFirstChildOfClass("Part")
-                    if itemPart then
-                        instantTravelTo(itemPart.Position)
-                        task.wait(0.5) -- Brief wait to let position update
-                    end
-                end
-                
-                local itemPart = v:FindFirstChildOfClass("MeshPart") or v:FindFirstChildOfClass("Part")
-                local proxPrompt = v:FindFirstChild("ProximityPrompt")
-                
-                if itemPart and proxPrompt then
-                    if instantPickup then
-                        -- Travel to item instantly
-                        instantTravelTo(itemPart)
-                        
-                        -- Wait 1 second AFTER arriving before picking up
-                        task.wait(1)
-                        
-                        -- Verify item still exists after waiting
-                        if itemPart and itemPart.Parent and proxPrompt and proxPrompt.Parent then
-                            checkAndSellMax()
-                            fireproximityprompt(proxPrompt, 0, true)
-                        end
-                    else
-                        -- Normal travel method
-                        travelTo(itemPart)
-                        task.wait(0.2)
-                        
-                        local hrp = player.Character.HumanoidRootPart
-                        if (itemPart.Position - hrp.Position).Magnitude < 5 then
-                            checkAndSellMax()
-                            fireproximityprompt(proxPrompt, 4)
-                            task.wait(0.1)
-                            
-                            -- Try again if not picked up
-                            if v:IsDescendantOf(game.Workspace) then
-                                fireproximityprompt(proxPrompt, 4)
-                            end
-                        end
-                    end
-                end
-                
-                checkAndSellMax()
-                roaming = true
-            end
-            
-            if not foundItem then
-                local hrp = player.Character.HumanoidRootPart
-                local currentPos = hrp.Position
-                local upPos = Vector3.new(currentPos.X, 100, currentPos.Z)
-                travelTo(upPos)
-                roamToRandom()
-            end
-            
-            task.wait(0.25) -- Increased from 0.05 to slow down roaming loop
         end
     end
+    checkAndSellMax()
+    roaming = true
+end
+if not foundItem then
+    local hrp = player.Character.HumanoidRootPart
+    local currentPos = hrp.Position
+    local upPos = Vector3.new(currentPos.X, 100, currentPos.Z)
+    travelTo(upPos)
+    roamToRandom()
+end
+wait(0.25) -- Increased from 0.05 to slow down roaming loop
+end
+end
 end
 local function startFarming(method)
 if method == "Normal" then
@@ -853,19 +804,21 @@ end
 local function stopFarming()
     normalFarmOn = false
     afkFarmOn = false
-    if forceCancelEnabled then
-        -- Forcefully close farming coroutines if they exist
-        if normalCoroutine and coroutine.status(normalCoroutine) ~= "dead" then
-            coroutine.close(normalCoroutine)
-            normalCoroutine = nil
-        end
-        if afkCoroutine and coroutine.status(afkCoroutine) ~= "dead" then
-            coroutine.close(afkCoroutine)
-            afkCoroutine = nil
-        end
-    end
     disableNoclip()
 end
+player.CharacterAdded:Connect(function(char)
+if normalFarmOn or afkFarmOn then
+wait(2) -- Wait for full load
+        enableNoclip()
+if normalFarmOn then
+if normalCoroutine then coroutine.close(normalCoroutine) end
+            normalCoroutine = coroutine.wrap(normalFarm)()
+elseif afkFarmOn then
+if afkCoroutine then coroutine.close(afkCoroutine) end
+            afkCoroutine = coroutine.wrap(afkFarm)()
+end
+end
+end)
 local itemESP = false
 local espConnection
 local function addItemESP(v)
@@ -1051,15 +1004,12 @@ if instantPickupConnection then
 end
 end
 local function instantTravelTo(target)
-    if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
-    local hrp = player.Character.HumanoidRootPart
-    local targetPos = typeof(target) == "Vector3" and target or target.Position
-    
-    -- Add slight offset to avoid getting stuck inside the item
-    hrp.CFrame = CFrame.new(targetPos + Vector3.new(0, 2, 0))
+if not player.Character or not player.Character.HumanoidRootPart then return end
+local hrp = player.Character.HumanoidRootPart
+local targetPos = typeof(target) == "Vector3" and target or target.Position
+    hrp.CFrame = CFrame.new(targetPos + Vector3.new(0, 0.10, 0)) -- slight offset to avoid stuck
 end
 local afkCameraOn = false
-local forceCancelEnabled = false
 local originalCameraType = nil
 local cameraConnection = nil
 local cancelGui = nil
@@ -2604,8 +2554,8 @@ local function enableFly()
             else
                 flyBodyVelocity.Velocity = Vector3.new(0, 0, 0)
             end
-                wait(forceCancelEnabled and 0.01 or nil)
-            end
+            wait()
+        end
     end)
 end
 local function disableFly()
@@ -2959,20 +2909,6 @@ end
 end
 })
 ConfigTab:Space()
-local forceCancelToggle = ConfigTab:Toggle({
-    Flag = "ForceCancel",
-    Title = "Force Cancel",
-    Default = false,
-    Callback = function(value)
-        forceCancelEnabled = value
-        if value then
-            notify("YBA Script", "Force Cancel enabled.")
-        else
-            notify("YBA Script", "Force Cancel disabled.")
-        end
-    end
-})
-ConfigTab:Space()
 local autoLoadToggle = ConfigTab:Toggle({
     Flag = "AutoLoad",
     Title = "Auto Load Script",
@@ -3016,15 +2952,19 @@ instantPickupToggle:Set(false)
 afkCameraToggle:Set(false)
 autoLoadToggle:Set(false)
 notify("YBA Script", "Script loaded successfully.")
+--// SBR FEATURE INTEGRATION (BULLETPROOF VERSION)
 local function LoadSBRFeatures()
+    --// Verify all dependencies exist
     if not SBRTab then
         warn("SBR: SBRTab not found!")
         return
     end
     
+    --// Check if in Steel Ball Run
     local isSBR = game.PlaceId == 4643697430
     
     if not isSBR then
+        -- Not in SBR, show warning
         SBRTab:Section({ Title = "⚠️ NOT IN SBR GAME" })
         SBRTab:Section({ Title = "Join Steel Ball Run to use these features" })
         SBRTab:Button({
