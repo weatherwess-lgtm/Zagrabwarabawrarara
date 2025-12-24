@@ -6,257 +6,9 @@ do
     if ok then
         WindUI = result
     else
-        local httpOk, httpResult = pcall(function()
-            return game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/refs/heads/main/dist/main.lua")
-        end)
-        if httpOk then
-            local loadOk, loadResult = pcall(loadstring, httpResult)
-            if loadOk and typeof(loadResult) == "function" then
-                local execOk, execResult = pcall(loadResult)
-                if execOk then
-                    WindUI = execResult
-                else
-                    warn("Failed to execute WindUI loadstring: " .. tostring(execResult))
-                end
-            else
-                warn("Failed to loadstring WindUI: " .. tostring(loadResult))
-            end
-        else
-            warn("Failed to HttpGet WindUI: " .. tostring(httpResult))
-        end
+        WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/refs/heads/main/dist/main.lua"))()
     end
 end
-if not WindUI then
-    warn("WindUI failed to load completely. Script may not function.")
-    return
-end
-local executor = identifyexecutor() or getexecutorname() or "Unknown"
-local badExecutors = {"Xeno", "Solara", "JJsploit", "bunni", "delta", "Krnl", "Velocity", "Wave", "Volcano"}
-local isBadExecutor = false
-for _, bad in ipairs(badExecutors) do
-    if executor:lower():find(bad:lower()) then
-        isBadExecutor = true
-        break
-    end
-end
-local player = game.Players.LocalPlayer
-local playerGui = player.PlayerGui
-local function cleanupOld()
-    -- GUIs
-    local guisToDestroy = {"AzureWarningUI", "AzureLoadingUI", "AzureUI", "CancelAFK"}
-    for _, name in ipairs(guisToDestroy) do
-        local gui = playerGui:FindFirstChild(name)
-        if gui then gui:Destroy() end
-    end
-    local itemsFolder = workspace:FindFirstChild("Item_Spawns") and workspace.Item_Spawns:FindFirstChild("Items")
-    if itemsFolder then
-        for _, v in pairs(itemsFolder:GetChildren()) do
-            local hl = v:FindFirstChild("ItemESP")
-            if hl then hl:Destroy() end
-            local bb = v:FindFirstChild("ItemESPName")
-            if bb then bb:Destroy() end
-        end
-    end
-    for _, plr in pairs(game.Players:GetPlayers()) do
-        if plr.Character then
-            local hl = plr.Character:FindFirstChild("PlayerESP")
-            if hl then hl:Destroy() end
-            local bb = plr.Character:FindFirstChild("PlayerESPName")
-            if bb then bb:Destroy() end
-        end
-    end
-    if player.Character then
-        for _, part in ipairs(player.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true
-            end
-        end
-    end
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        local hrp = player.Character.HumanoidRootPart
-        for _, child in ipairs(hrp:GetChildren()) do
-            if child:IsA("BodyVelocity") or child:IsA("BodyGyro") then
-                child:Destroy()
-            end
-        end
-    end
-    local char = player.Character
-    if char then
-        local hrp = char:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            for _, c in ipairs(hrp:GetChildren()) do
-                if c.Name:match("^Stick_") then c:Destroy() end
-            end
-        end
-        local function getStand()
-            if not char then return nil end
-            for _, child in ipairs(char:GetChildren()) do
-                if child:IsA("Model") and child:FindFirstChild("HumanoidRootPart") and child ~= char then
-                    return child
-                end
-            end
-            return nil
-        end
-        local stand = getStand()
-        if stand then
-            local standHRP = stand:FindFirstChild("HumanoidRootPart")
-            if standHRP then
-                for _, c in ipairs(standHRP:GetChildren()) do
-                    if c.Name:match("^Stick_") then c:Destroy() end
-                end
-            end
-        end
-    end
-    local camera = workspace.CurrentCamera
-    camera.CameraType = Enum.CameraType.Custom
-    camera.CameraSubject = player.Character and player.Character:FindFirstChild("Humanoid")
-    local function getItemContainer()
-        local spawns = workspace:FindFirstChild("Item_Spawns")
-        if not spawns then return nil end
-        return spawns:FindFirstChild("Items")
-    end
-    local container = getItemContainer()
-    if container then
-        for _, v in pairs(container:GetChildren()) do
-            local prox = v:FindFirstChild("ProximityPrompt")
-            if prox then
-                prox.HoldDuration = 0.5 -- default
-            end
-        end
-    end
-    local lighting = game.Lighting
-    lighting.Brightness = 1
-    lighting.ClockTime = 14
-    lighting.FogEnd = 100000
-    lighting.GlobalShadows = true
-    lighting.Ambient = Color3.fromRGB(128, 128, 128)
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("Highlight") then
-            obj.Enabled = true
-        end
-    end
-    if lighting:FindFirstChild("Bloom") then lighting.Bloom.Enabled = true end
-    if lighting:FindFirstChild("SunRays") then lighting.SunRays.Enabled = true end
-    if lighting:FindFirstChild("DepthOfField") then lighting.DepthOfField.Enabled = true end
-end
-cleanupOld()
-if isBadExecutor then
-    local warningGui = Instance.new("ScreenGui")
-    warningGui.Name = "DiabloWarningUI"
-    warningGui.Parent = game.Players.LocalPlayer.PlayerGui
-    warningGui.ResetOnSpawn = false
-    warningGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    local warningFrame = Instance.new("Frame")
-    warningFrame.BackgroundTransparency = 0.2
-    warningFrame.BorderSizePixel = 0
-    warningFrame.Position = UDim2.new(0.5, -250, 0.5, -120)
-    warningFrame.Size = UDim2.new(0, 500, 0, 240)
-    warningFrame.Parent = warningGui
-    -- Gradient background
-    local gradient = Instance.new("UIGradient")
-    gradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 40)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 20, 20))
-    }
-    gradient.Rotation = 45
-    gradient.Parent = warningFrame
-    local UICornerWarning = Instance.new("UICorner")
-    UICornerWarning.CornerRadius = UDim.new(0.08, 0)
-    UICornerWarning.Parent = warningFrame
-    -- Warning icon
-    local warningIcon = Instance.new("TextLabel")
-    warningIcon.BackgroundTransparency = 1
-    warningIcon.Position = UDim2.new(0.5, -30, 0, 20)
-    warningIcon.Size = UDim2.new(0, 60, 0, 60)
-    warningIcon.Font = Enum.Font.SourceSansBold
-    warningIcon.Text = "⚠️"
-    warningIcon.TextColor3 = Color3.fromRGB(255, 200, 0)
-    warningIcon.TextSize = 48
-    warningIcon.Parent = warningFrame
-    local warningLabel = Instance.new("TextLabel")
-    warningLabel.BackgroundTransparency = 1
-    warningLabel.Position = UDim2.new(0, 20, 0, 90)
-    warningLabel.Size = UDim2.new(1, -40, 0, 100)
-    warningLabel.Font = Enum.Font.GothamBold
-    warningLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-    warningLabel.TextSize = 22
-    warningLabel.TextWrapped = true
-    warningLabel.Text = "⚠️ EXECUTOR NOT SUPPORTED ⚠️\n\nSome feature may not be supported or not work properly please switch to a different one"
-    warningLabel.TextXAlignment = Enum.TextXAlignment.Center
-    warningLabel.Parent = warningFrame
-    -- Subtle glow effect
-    local glow = Instance.new("UIStroke")
-    glow.Color = Color3.fromRGB(255, 50, 50)
-    glow.Thickness = 2
-    glow.Transparency = 0.7
-    glow.Parent = warningFrame
-    wait(math.random(4, 6))
-    warningGui:Destroy()
-end
--- Enhanced Welcome GUI with animation
-local loadingGui = Instance.new("ScreenGui")
-loadingGui.Name = "DiabloLoadingUI"
-loadingGui.Parent = game.Players.LocalPlayer.PlayerGui
-loadingGui.ResetOnSpawn = false
-loadingGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-local loadingFrame = Instance.new("Frame")
-loadingFrame.BackgroundTransparency = 0.2
-loadingFrame.BorderSizePixel = 0
-loadingFrame.Position = UDim2.new(0.5, -175, 0.5, -90)
-loadingFrame.Size = UDim2.new(0, 350, 0, 180)
-loadingFrame.Parent = loadingGui
--- Blue gradient for Azure theme
-local gradient = Instance.new("UIGradient")
-gradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 100, 200)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 40, 120))
-}
-gradient.Rotation = -45
-gradient.Parent = loadingFrame
-local UICornerLoading = Instance.new("UICorner")
-UICornerLoading.CornerRadius = UDim.new(0.08, 0)
-UICornerLoading.Parent = loadingFrame
--- Azure logo/icon
-local logo = Instance.new("TextLabel")
-logo.BackgroundTransparency = 1
-logo.Position = UDim2.new(0.5, -25, 0, 15)
-logo.Size = UDim2.new(0, 50, 0, 50)
-logo.Font = Enum.Font.SourceSansBold
-logo.Text = "☁️"
-logo.TextColor3 = Color3.fromRGB(255, 255, 255)
-logo.TextSize = 36
-logo.Parent = loadingFrame
-local welcomeLabel = Instance.new("TextLabel")
-welcomeLabel.BackgroundTransparency = 1
-welcomeLabel.Position = UDim2.new(0, 0, 0, 70)
-welcomeLabel.Size = UDim2.new(1, 0, 0, 30)
-welcomeLabel.Font = Enum.Font.GothamBold
-welcomeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-welcomeLabel.TextSize = 26
-welcomeLabel.Text = "Welcome to Azure.Hub"
-welcomeLabel.TextXAlignment = Enum.TextXAlignment.Center
-welcomeLabel.Parent = loadingFrame
-local loadingLabel = Instance.new("TextLabel")
-loadingLabel.BackgroundTransparency = 1
-loadingLabel.Position = UDim2.new(0, 0, 0, 110)
-loadingLabel.Size = UDim2.new(1, 0, 0, 25)
-loadingLabel.Font = Enum.Font.Gotham
-loadingLabel.TextColor3 = Color3.fromRGB(200, 220, 255)
-loadingLabel.TextSize = 18
-loadingLabel.Text = "Initialising..."
-loadingLabel.TextXAlignment = Enum.TextXAlignment.Center
-loadingLabel.Parent = loadingFrame
--- Loading animation
-local dotsCount = 0
-spawn(function()
-    while loadingGui.Parent do
-        dotsCount = (dotsCount % 3) + 1
-        loadingLabel.Text = "Loading" .. ("."):rep(dotsCount)
-        wait(0.4)
-    end
-end)
-wait(3)
-loadingGui:Destroy()
 local Window = WindUI:CreateWindow({
     Title = "YBA Script",
     Icon = "cat",
@@ -453,6 +205,7 @@ AboutSection:Section({
 })
 local FarmingTab = Window:Tab({ Title = "Farming", Icon = "skull" })
 local SBRTab = Window:Tab({ Title = "SBR", Icon = "sliders-horizontal" })
+local StandFarmTab = Window:Tab({ Title = "StandFarm", Icon = "star" })
 local SellingTab = Window:Tab({ Title = "Selling", Icon = "dollar-sign" })
 local VisualTab = Window:Tab({ Title = "Visual", Icon = "eye" })
 local AdjustTab = Window:Tab({ Title = "Adjust", Icon = "sliders-horizontal" })
@@ -949,94 +702,143 @@ local function findLuckyArrow()
     return nearest
 end
 local function normalFarm()
-while normalFarmOn do
-if not player.Character or not player.Character:FindFirstChild("Humanoid") or player.Character.Humanoid.Health <= 0 then
-wait(1)
+    while normalFarmOn do
+        if not player.Character or not player.Character:FindFirstChild("Humanoid") or player.Character.Humanoid.Health <= 0 then
+            task.wait(1)
             continue
-end
-local foundItem = false
-while true do
-    local v = findLuckyArrow() or findNearestItem(selectedFarmItems)
-    if not v then break end
-    foundItem = true
-    local itemPart = v:FindFirstChildOfClass("MeshPart") or v:FindFirstChildOfClass("Part")
-    local proxPrompt = v:FindFirstChild("ProximityPrompt")
-      if instantPickup then
-        instantTravelTo(itemPart)
-        wait(1) -- Wait 1 second after arriving before picking up
-        checkAndSellMax()
-        fireproximityprompt(proxPrompt, 0, true)
-    else
-        travelTo(itemPart)
-        wait(0.2)
-        local hrp = player.Character.HumanoidRootPart
-        if (itemPart.Position - hrp.Position).Magnitude < 5 then
-            checkAndSellMax()
-            fireproximityprompt(proxPrompt, 4)
-            wait(0.1) -- Wait briefly
-            if v:IsDescendantOf(game.Workspace) then
-                fireproximityprompt(proxPrompt, 4) -- Try again if not picked
-            end
         end
+        
+        local foundItem = false
+        while true do
+            local v = findLuckyArrow() or findNearestItem(selectedFarmItems)
+            if not v then break end
+            foundItem = true
+            
+            local itemPart = v:FindFirstChildOfClass("MeshPart") or v:FindFirstChildOfClass("Part")
+            local proxPrompt = v:FindFirstChild("ProximityPrompt")
+            
+            if not itemPart or not proxPrompt then break end
+            
+            if instantPickup then
+                -- Travel to item instantly
+                instantTravelTo(itemPart)
+                
+                -- Wait 1 second AFTER arriving before picking up
+                task.wait(1)
+                
+                -- Verify item still exists after waiting
+                if itemPart and itemPart.Parent and proxPrompt and proxPrompt.Parent then
+                    checkAndSellMax()
+                    fireproximityprompt(proxPrompt, 0, true)
+                end
+            else
+                -- Normal travel method
+                travelTo(itemPart)
+                task.wait(0.2)
+                
+                local hrp = player.Character.HumanoidRootPart
+                if (itemPart.Position - hrp.Position).Magnitude < 5 then
+                    checkAndSellMax()
+                    fireproximityprompt(proxPrompt, 4)
+                    task.wait(0.1)
+                    
+                    -- Try again if not picked up
+                    if v:IsDescendantOf(game.Workspace) then
+                        fireproximityprompt(proxPrompt, 4)
+                    end
+                end
+            end
+            
+            checkAndSellMax()
+            task.wait(0.2)
+        end
+        
+        if not foundItem then
+            teleportToRandom()
+        end
+        
+        task.wait(0.2)
     end
-    checkAndSellMax()
-    wait(0.2) -- Wait after pickup
-end
-if not foundItem then
-    teleportToRandom()
-end
-wait(0.2)
-end
 end
 local function afkFarm()
-while afkFarmOn do
-if not player.Character or not player.Character:FindFirstChild("Humanoid") or player.Character.Humanoid.Health <= 0 then
-wait(1)
+    while afkFarmOn do
+        if not player.Character or not player.Character:FindFirstChild("Humanoid") or player.Character.Humanoid.Health <= 0 then
+            task.wait(1)
             continue
-end
-local roaming = true
-while roaming and afkFarmOn do
-if not player.Character or not player.Character:FindFirstChild("Humanoid") or player.Character.Humanoid.Health <= 0 then
-break
-end
-local foundItem = false
-local v = findLuckyArrow() or findNearestItem(selectedFarmItems)
-if v then
-    foundItem = true
-    roaming = false
-    local itemPart = v:FindFirstChildOfClass("MeshPart") or v:FindFirstChildOfClass("Part")
-    local proxPrompt = v:FindFirstChild("ProximityPrompt")
-     if instantPickup then
-        instantTravelTo(itemPart)
-        wait(1) -- Wait 1 second after arriving before picking up
-        checkAndSellMax()
-        fireproximityprompt(proxPrompt, 0, true)
-    else
-        travelTo(itemPart)
-        wait(0.2)
-        local hrp = player.Character.HumanoidRootPart
-        if (itemPart.Position - hrp.Position).Magnitude < 5 then
-            checkAndSellMax()
-            fireproximityprompt(proxPrompt, 4)
-            wait(0.1) -- Wait briefly
-            if v:IsDescendantOf(game.Workspace) then
-                fireproximityprompt(proxPrompt, 4) -- Try again if not picked
+        end
+        
+        local roaming = true
+        while roaming and afkFarmOn do
+            if not player.Character or not player.Character:FindFirstChild("Humanoid") or player.Character.Humanoid.Health <= 0 then
+                break
             end
+            
+            local foundItem = false
+            local v = findLuckyArrow() or findNearestItem(selectedFarmItems)
+            
+            if v then
+                foundItem = true
+                roaming = false
+                
+                -- Force cancel: immediately go to item with priority
+                if forceCancelEnabled then
+                    local itemPart = v:FindFirstChildOfClass("MeshPart") or v:FindFirstChildOfClass("Part")
+                    if itemPart then
+                        instantTravelTo(itemPart.Position)
+                        task.wait(0.5) -- Brief wait to let position update
+                    end
+                end
+                
+                local itemPart = v:FindFirstChildOfClass("MeshPart") or v:FindFirstChildOfClass("Part")
+                local proxPrompt = v:FindFirstChild("ProximityPrompt")
+                
+                if itemPart and proxPrompt then
+                    if instantPickup then
+                        -- Travel to item instantly
+                        instantTravelTo(itemPart)
+                        
+                        -- Wait 1 second AFTER arriving before picking up
+                        task.wait(1)
+                        
+                        -- Verify item still exists after waiting
+                        if itemPart and itemPart.Parent and proxPrompt and proxPrompt.Parent then
+                            checkAndSellMax()
+                            fireproximityprompt(proxPrompt, 0, true)
+                        end
+                    else
+                        -- Normal travel method
+                        travelTo(itemPart)
+                        task.wait(0.2)
+                        
+                        local hrp = player.Character.HumanoidRootPart
+                        if (itemPart.Position - hrp.Position).Magnitude < 5 then
+                            checkAndSellMax()
+                            fireproximityprompt(proxPrompt, 4)
+                            task.wait(0.1)
+                            
+                            -- Try again if not picked up
+                            if v:IsDescendantOf(game.Workspace) then
+                                fireproximityprompt(proxPrompt, 4)
+                            end
+                        end
+                    end
+                end
+                
+                checkAndSellMax()
+                roaming = true
+            end
+            
+            if not foundItem then
+                local hrp = player.Character.HumanoidRootPart
+                local currentPos = hrp.Position
+                local upPos = Vector3.new(currentPos.X, 100, currentPos.Z)
+                travelTo(upPos)
+                roamToRandom()
+            end
+            
+            task.wait(0.25) -- Increased from 0.05 to slow down roaming loop
         end
     end
-    checkAndSellMax()
-    roaming = true
-end
-if not foundItem then
-    local hrp = player.Character.HumanoidRootPart
-    local currentPos = hrp.Position
-    local upPos = Vector3.new(currentPos.X, 100, currentPos.Z)
-    travelTo(upPos)
-    roamToRandom()
-end
-wait(0.25) -- Increased from 0.05 to slow down roaming loop
-end
-end
 end
 local function startFarming(method)
 if method == "Normal" then
@@ -1051,21 +853,19 @@ end
 local function stopFarming()
     normalFarmOn = false
     afkFarmOn = false
+    if forceCancelEnabled then
+        -- Forcefully close farming coroutines if they exist
+        if normalCoroutine and coroutine.status(normalCoroutine) ~= "dead" then
+            coroutine.close(normalCoroutine)
+            normalCoroutine = nil
+        end
+        if afkCoroutine and coroutine.status(afkCoroutine) ~= "dead" then
+            coroutine.close(afkCoroutine)
+            afkCoroutine = nil
+        end
+    end
     disableNoclip()
 end
-player.CharacterAdded:Connect(function(char)
-if normalFarmOn or afkFarmOn then
-wait(2) -- Wait for full load
-        enableNoclip()
-if normalFarmOn then
-if normalCoroutine then coroutine.close(normalCoroutine) end
-            normalCoroutine = coroutine.wrap(normalFarm)()
-elseif afkFarmOn then
-if afkCoroutine then coroutine.close(afkCoroutine) end
-            afkCoroutine = coroutine.wrap(afkFarm)()
-end
-end
-end)
 local itemESP = false
 local espConnection
 local function addItemESP(v)
@@ -1251,12 +1051,15 @@ if instantPickupConnection then
 end
 end
 local function instantTravelTo(target)
-if not player.Character or not player.Character.HumanoidRootPart then return end
-local hrp = player.Character.HumanoidRootPart
-local targetPos = typeof(target) == "Vector3" and target or target.Position
-    hrp.CFrame = CFrame.new(targetPos + Vector3.new(0, 0.10, 0)) -- slight offset to avoid stuck
+    if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+    local hrp = player.Character.HumanoidRootPart
+    local targetPos = typeof(target) == "Vector3" and target or target.Position
+    
+    -- Add slight offset to avoid getting stuck inside the item
+    hrp.CFrame = CFrame.new(targetPos + Vector3.new(0, 2, 0))
 end
 local afkCameraOn = false
+local forceCancelEnabled = false
 local originalCameraType = nil
 local cameraConnection = nil
 local cancelGui = nil
@@ -1410,15 +1213,16 @@ local method = farmMethod
                 pad.Transparency = 0.95
                 pad.Name = "WhitePad"
                 pad.Parent = game.Workspace
-                wait(1)
+                if not game.Workspace:FindFirstChild("UnderwhitePad") then
                 local pad = Instance.new("Part")
-pad.Size = Vector3.new(10000, 1, 10000)
-pad.Position = Vector3.new(0, -45, 0)
-pad.Anchored = true
-pad.Color = Color3.fromRGB(255, 255, 255)
-pad.Transparency = 0.5
-pad.Name = "WhitePad"
-pad.Parent = game.Workspace
+                pad.Size = Vector3.new(10000, 1, 10000)
+                pad.Position = Vector3.new(0, -45, 0)
+                pad.Anchored = true
+                pad.Color = Color3.fromRGB(255, 255, 255)
+                pad.Transparency = 0.5
+                pad.Name = "UnderwhitePad"
+                pad.Parent = game.Workspace
+            end
             end
         else
             notify("YBA Script", "Farming disabled.")
@@ -1427,6 +1231,10 @@ pad.Parent = game.Workspace
             local pad = game.Workspace:FindFirstChild("WhitePad")
             if pad then
                 pad:Destroy()
+                local underPad = game.Workspace:FindFirstChild("UnderwhitePad")
+            if underPad then
+                underPad:Destroy()
+            end
             end
         end
     end
@@ -2796,8 +2604,8 @@ local function enableFly()
             else
                 flyBodyVelocity.Velocity = Vector3.new(0, 0, 0)
             end
-            wait()
-        end
+                wait(forceCancelEnabled and 0.01 or nil)
+            end
     end)
 end
 local function disableFly()
@@ -3151,6 +2959,20 @@ end
 end
 })
 ConfigTab:Space()
+local forceCancelToggle = ConfigTab:Toggle({
+    Flag = "ForceCancel",
+    Title = "Force Cancel",
+    Default = false,
+    Callback = function(value)
+        forceCancelEnabled = value
+        if value then
+            notify("YBA Script", "Force Cancel enabled.")
+        else
+            notify("YBA Script", "Force Cancel disabled.")
+        end
+    end
+})
+ConfigTab:Space()
 local autoLoadToggle = ConfigTab:Toggle({
     Flag = "AutoLoad",
     Title = "Auto Load Script",
@@ -3194,19 +3016,15 @@ instantPickupToggle:Set(false)
 afkCameraToggle:Set(false)
 autoLoadToggle:Set(false)
 notify("YBA Script", "Script loaded successfully.")
---// SBR FEATURE INTEGRATION (BULLETPROOF VERSION)
 local function LoadSBRFeatures()
-    --// Verify all dependencies exist
     if not SBRTab then
         warn("SBR: SBRTab not found!")
         return
     end
     
-    --// Check if in Steel Ball Run
     local isSBR = game.PlaceId == 4643697430
     
     if not isSBR then
-        -- Not in SBR, show warning
         SBRTab:Section({ Title = "⚠️ NOT IN SBR GAME" })
         SBRTab:Section({ Title = "Join Steel Ball Run to use these features" })
         SBRTab:Button({
@@ -3500,3 +3318,596 @@ end
         end)
     end
 end)
+Window:SetToggleKey(Enum.KeyCode.K)
+
+local Util = {
+    States = {};
+    Ints = {};
+    Strings = {};
+    Tables = {};
+    Tasks = {};
+    Services = setmetatable({}, {__index = function(self, service)
+        local GotService = game:GetService(service)
+        rawset(self, service, GotService)
+        return GotService
+    end});
+}
+
+function Util:GetPlayer()
+    return self.Services.Players.LocalPlayer
+end
+
+function Util:GetCharacter()
+    return self:GetPlayer().Character or self:GetPlayer().CharacterAdded:Wait()
+end
+
+function Util:GetHRP()
+    local Character = self:GetCharacter()
+    return Character and Character:FindFirstChild("HumanoidRootPart")
+end
+
+function Util:GetHumanoid()
+    local Character = self:GetCharacter()
+    return Character and Character:FindFirstChildWhichIsA("Humanoid")
+end
+
+function Util:SetState(key, value)
+    self.States[key] = {Value = value}
+end
+
+function Util:GetState(key)
+    return self.States[key] and self.States[key].Value or false
+end
+
+function Util:SetInt(key, value)
+    self.Ints[key] = {Value = value}
+end
+
+function Util:GetInt(key, default)
+    return self.Ints[key] and self.Ints[key].Value or default or 0
+end
+
+function Util:SetTable(key, value)
+    self.Tables[key] = {Value = value}
+end
+
+function Util:GetTable(key)
+    return self.Tables[key] and self.Tables[key].Value or {}
+end
+
+function Util:InsertTable(key, value)
+    local tbl = self:GetTable(key)
+    table.insert(tbl, value)
+    self:SetTable(key, tbl)
+end
+
+function Util:RemoveTable(key, value)
+    local tbl = self:GetTable(key)
+    local pos = table.find(tbl, value)
+    if pos then table.remove(tbl, pos) end
+    self:SetTable(key, tbl)
+end
+
+function Util:FindTable(key, value)
+    return table.find(self:GetTable(key), value)
+end
+
+function Util:AddTask(name, task)
+    self.Tasks[name] = task
+end
+
+function Util:DisconnectTask(name)
+    if self.Tasks[name] then
+        pcall(function() self.Tasks[name]:Disconnect() end)
+        self.Tasks[name] = nil
+    end
+end
+
+function Util:CountItem(itemName)
+    local Backpack = self:GetPlayer().Backpack
+    local count = 0
+    if Backpack then
+        for _, v in pairs(Backpack:GetChildren()) do
+            if v.Name == itemName then count = count + 1 end
+        end
+    end
+    local Character = self:GetPlayer().Character
+    if Character then
+        for _, v in pairs(Character:GetChildren()) do
+            if v.Name == itemName then count = count + 1 end
+        end
+    end
+    return count
+end
+
+function Util:HasStand()
+    return self:GetPlayer().PlayerStats.Stand.Value ~= "None"
+end
+
+function Util:CheckStand()
+    return self:GetPlayer().PlayerStats.Stand.Value
+end
+
+function Util:CheckShiny()
+    local Character = self:GetCharacter()
+    if Character and Character:FindFirstChild("RemoteFunction") then
+        local ok, res = pcall(function()
+            return Character.RemoteFunction:InvokeServer("ReturnStandSkin", "Stand")
+        end)
+        return ok and (res or "None") or "None"
+    end
+    return "None"
+end
+
+function Util:HasShiny()
+    local shiny = self:CheckShiny()
+    return shiny ~= "None" and shiny ~= nil
+end
+
+function Util:IsMax(itemName)
+    local max = {
+        ["Diamond"] = 30, ["Gold Coin"] = 45, ["Mysterious Arrow"] = 25,
+        ["Pure Rokakaka"] = 10, ["Rokakaka"] = 25, ["Stone Mask"] = 10,
+        ["Rib Cage of The Saint's Corpse"] = 10, ["Steel Ball"] = 10,
+        ["Ancient Scroll"] = 10, ["Dio's Diary"] = 10, ["Caesar's Headband"] = 10,
+        ["Christmas Present"] = 45, ["Quinton's Glove"] = 10, ["Lucky Arrow"] = 10
+    }
+    local ok, owns = pcall(function()
+        return game:GetService("MarketplaceService"):UserOwnsGamePassAsync(self:GetPlayer().UserId, 14597778)
+    end)
+    if ok and owns then
+        for k, v in pairs(max) do max[k] = v * 2 end
+    end
+    return self:CountItem(itemName) >= (max[itemName] or 999)
+end
+
+function Util:WaitTillBackpackLoaded()
+    local Backpack = self:GetPlayer().Backpack
+    local start = tick()
+    while tick() - start < 2 do
+        if Backpack and #Backpack:GetChildren() > 0 then break end
+        task.wait(0.05)
+    end
+end
+
+function Util:LearnSkills(skills)
+    local Character = self:GetCharacter()
+    if Character and Character:FindFirstChild("RemoteFunction") then
+        for _, skill in pairs(skills) do
+            pcall(function()
+                Character.RemoteFunction:InvokeServer("LearnSkill", {
+                    Skill = skill,
+                    SkillTreeType = "Character"
+                })
+            end)
+        end
+    end
+end
+
+function Util:FindTool(itemName)
+    local player = self:GetPlayer()
+    local Backpack = player and player.Backpack
+    local Character = player and player.Character
+    if Backpack then
+        for _, v in pairs(Backpack:GetChildren()) do
+            if v:IsA("Tool") and v.Name == itemName then
+                return v
+            end
+        end
+    end
+    if Character then
+        for _, v in pairs(Character:GetChildren()) do
+            if v:IsA("Tool") and v.Name == itemName then
+                return v
+            end
+        end
+    end
+    return nil
+end
+
+function Util:EquipToolByName(itemName, timeout)
+    timeout = timeout or 5
+    local start = tick()
+    while tick() - start < timeout do
+        local tool = self:FindTool(itemName)
+        if tool and self:GetHumanoid() then
+            pcall(function() self:GetHumanoid():EquipTool(tool) end)
+            local charTool = self:GetCharacter():FindFirstChildWhichIsA("Tool")
+            if charTool and charTool.Name == itemName then
+                return true
+            end
+        end
+        task.wait(0.05)
+    end
+    return false
+end
+
+function Util:ClickUntilDialogue()
+    local start = tick()
+    while tick() - start < 6 do
+        if self:GetPlayer().PlayerGui:FindFirstChild("DialogueGui") then
+            return true
+        end
+        pcall(function()
+            if game:GetService("VirtualInputManager") then
+                game:GetService("VirtualInputManager"):SendMouseButtonEvent(0,8,0, true, nil, 1)
+            end
+        end)
+        task.wait(0.06)
+    end
+    return false
+end
+
+function Util:SelectDialogueOption1()
+    local start = tick()
+    while tick() - start < 6 do
+        local dg = self:GetPlayer().PlayerGui:FindFirstChild("DialogueGui")
+        if dg and dg.Frame and dg.Frame.Options and dg.Frame.Options:FindFirstChild("Option1") then
+            pcall(function()
+                if dg.Frame.Options.Option1.TextButton and dg.Frame.Options.Option1.TextButton.MouseButton1Click then
+                    dg.Frame.Options.Option1.TextButton.MouseButton1Click:Fire()
+                end
+            end)
+            repeat task.wait() until not self:GetPlayer().PlayerGui:FindFirstChild("DialogueGui") or tick() - start > 8
+            return true
+        end
+        task.wait(0.05)
+    end
+    return false
+end
+
+function Util:UseRoka()
+    if self:CountItem("Rokakaka") == 0 and self:CountItem("Pure Rokakaka") == 0 then return end
+    if self:GetPlayer().PlayerStats.Stand.Value == "None" then return end
+
+    self:WaitTillBackpackLoaded()
+    if not self:EquipToolByName("Rokakaka", 6) then
+        self:EquipToolByName("Pure Rokakaka", 6)
+    end
+
+    if self:ClickUntilDialogue() then
+        self:SelectDialogueOption1()
+    end
+
+    self:GetPlayer().CharacterAdded:Wait()
+    task.wait(0.25)
+end
+
+function Util:UseArrow()
+    if self:CountItem("Mysterious Arrow") == 0 and self:CountItem("Lucky Arrow") == 0 then return end
+    if self:GetPlayer().PlayerStats.Stand.Value ~= "None" then return end
+
+    self:WaitTillBackpackLoaded()
+    if not self:EquipToolByName("Mysterious Arrow", 6) then
+        self:EquipToolByName("Lucky Arrow", 6)
+    end
+
+    if self:ClickUntilDialogue() then
+        self:SelectDialogueOption1()
+    end
+
+    self:GetPlayer().CharacterAdded:Wait()
+    task.wait(0.25)
+end
+
+function Util:UseRib()
+    local args = {
+        [1] = "EndDialogue",
+        [2] = {
+            ["NPC"] = "Rib Cage of The Saint's Corpse",
+            ["Option"] = "Option1",
+            ["Dialogue"] = "Dialogue2"
+        }
+    }
+    pcall(function()
+        if self:GetCharacter() and self:GetCharacter().RemoteEvent then
+            self:GetCharacter().RemoteEvent:FireServer(unpack(args))
+        end
+    end)
+end
+
+function Util:FarmItems(itemList)
+    for _, itemName in pairs(itemList) do
+        if self:CountItem(itemName) == 0 and not self:IsMax(itemName) then
+            local itemsFolder = workspace:FindFirstChild("Item_Spawns") and workspace.Item_Spawns:FindFirstChild("Items")
+            if itemsFolder then
+                for _, item in pairs(itemsFolder:GetChildren()) do
+                    if item.Name == itemName then
+                        local prompt = item:FindFirstChild("ProximityPrompt")
+                        if prompt and item.PrimaryPart then
+                            local start = tick()
+                            self:GetHRP().CFrame = item.PrimaryPart.CFrame - v3(0, 10, 0)
+                            repeat
+                                task.wait()
+                                pcall(function() fireproximityprompt(prompt) end)
+                                if item.PrimaryPart then
+                                    self:GetHRP().CFrame = item.PrimaryPart.CFrame - v3(0, 10, 0)
+                                end
+                            until item.Parent ~= itemsFolder or tick() - start >= 5
+                            task.wait(0.6)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+function Util:Stats()
+    local skills = {"Agility I", "Agility II", "Agility III", "Worthiness"}
+    if self:GetState("Rib Farm") then
+        table.insert(skills, "Worthiness II")
+        table.insert(skills, "Worthiness III")
+        table.insert(skills, "Worthiness IV")
+        table.insert(skills, "Worthiness V")
+    end
+    self:LearnSkills(skills)
+end
+
+Util:SetState("Stand Farming", false)
+Util:SetState("Rib Farm", false)
+Util:SetState("Arrow Pity Farm", false)
+Util:SetState("Rib Pity Farm", false)
+Util:SetState("Use Redeemed", false)
+Util:SetState("Keep any shiny", false)
+Util:SetInt("Pity Amount", 20)
+Util:SetTable("Stands", {})
+Util:SetTable("Shinys", {})
+
+-- Create Single Tab: Stand Farming
+
+local SettingsSection = StandFarmTab:Section({
+    Title = "Farm Settings"
+})
+
+SettingsSection:Toggle({
+    Flag = "ArrowPityFarm",
+    Title = "Arrow Pity Farm",
+    Default = false,
+    Callback = function(State)
+        Util:SetState("Arrow Pity Farm", State)
+        if State then
+            Window:Notify({
+                Title = "Warning",
+                Content = "Requires Stand Farm enabled",
+                Icon = "alert-triangle"
+            })
+        end
+    end
+})
+
+SettingsSection:Toggle({
+    Flag = "RibPityFarm",
+    Title = "Rib Pity Farm",
+    Default = false,
+    Callback = function(State)
+        Util:SetState("Rib Pity Farm", State)
+        if State then
+            Window:Notify({
+                Title = "Warning",
+                Content = "Requires Rib Farm enabled",
+                Icon = "alert-triangle"
+            })
+        end
+    end
+})
+
+SettingsSection:Slider({
+    Flag = "PityAmount",
+    Title = "Pity Amount",
+    Step = 1,
+    Value = {
+        Min = 20,
+        Max = 125,
+        Default = 20
+    },
+    Callback = function(Value)
+        Util:SetInt("Pity Amount", Value)
+    end
+})
+
+SettingsSection:Toggle({
+    Flag = "UseRedeemed",
+    Title = "Use Redeemed Items",
+    Default = false,
+    Callback = function(State)
+        Util:SetState("Use Redeemed", State)
+    end
+})
+
+SettingsSection:Toggle({
+    Flag = "KeepShiny",
+    Title = "Keep Any Shiny",
+    Default = false,
+    Callback = function(State)
+        Util:SetState("Keep any shiny", State)
+    end
+})
+
+local StandFarmSection = StandFarmTab:Section({
+    Title = "Stand Farm"
+})
+
+StandFarmSection:Toggle({
+    Flag = "StandFarm",
+    Title = "Enable Stand Farm",
+    Default = false,
+    Callback = function(State)
+        Util:SetState("Stand Farming", State)
+        
+        if State then
+            pcall(function() Util:GetHRP().CFrame = cf(v3(-324, -32, 47)) end)
+            if not Util.Tasks.SafeFarm then
+                Util:AddTask("SafeFarm", Util:GetPlayer().CharacterAdded:Connect(function(Char)
+                    task.wait(0.15)
+                    pcall(function() Char.PrimaryPart.CFrame = cf(v3(-324, -32, 47)) end)
+                end))
+            end
+
+            task.spawn(function()
+                task.wait(0.2)
+                if (Util:CountItem("Rokakaka") > 0 or Util:CountItem("Pure Rokakaka") > 0) and (Util:CountItem("Mysterious Arrow") > 0 or Util:CountItem("Lucky Arrow") > 0) then
+                    pcall(function() Util:UseRoka() end)
+                    pcall(function() Util:WaitTillBackpackLoaded() end)
+                    pcall(function() Util:UseArrow() end)
+                end
+            end)
+        else
+            Util:DisconnectTask("SafeFarm")
+        end
+        
+        while Util:GetState("Stand Farming") do
+            if Util:CountItem("Mysterious Arrow") == 0 or Util:CountItem("Rokakaka") == 0 then
+                Util:FarmItems({"Mysterious Arrow", "Rokakaka"})
+            end
+            
+            if Util:HasStand() and Util:FindTable("Stands", Util:CheckStand()) then
+                Window:Notify({
+                    Title = "Stand Obtained!",
+                    Content = Util:CheckStand(),
+                    Icon = "check"
+                })
+                break
+            end
+            
+            if Util:HasStand() then
+                Util:UseRoka()
+                repeat task.wait() until not Util:HasStand()
+            else
+                Util:Stats()
+                Util:UseArrow()
+                repeat task.wait() until Util:HasStand()
+            end
+            
+            task.wait(1)
+        end
+    end
+})
+
+local RibFarmSection = StandFarmTab:Section({
+    Title = "Rib Farm"
+})
+
+RibFarmSection:Toggle({
+    Flag = "RibFarm",
+    Title = "Enable Rib Farm",
+    Default = false,
+    Callback = function(State)
+        Util:SetState("Rib Farm", State)
+        
+        if State then
+            pcall(function() Util:GetHRP().CFrame = cf(v3(-324, -32, 47)) end)
+            if not Util.Tasks.SafeFarm then
+                Util:AddTask("SafeFarm", Util:GetPlayer().CharacterAdded:Connect(function(Char)
+                    task.wait(0.15)
+                    pcall(function() Char.PrimaryPart.CFrame = cf(v3(-324, -32, 47)) end)
+                end))
+            end
+        else
+            Util:DisconnectTask("SafeFarm")
+        end
+        
+        while Util:GetState("Rib Farm") do
+            if Util:CountItem("Rib Cage of The Saint's Corpse") == 0 then
+                Util:FarmItems({"Rib Cage of The Saint's Corpse"})
+            end
+            
+            Util:Stats()
+            Util:UseRib()
+            repeat task.wait() until Util:HasStand()
+            
+            task.wait(1)
+        end
+    end
+})
+
+local StandSelectSection = StandFarmTab:Section({
+    Title = "Stand Selection (28 stands)"
+})
+
+local standNames = {"Whitesnake", "Stone Free", "Star Platinum", "The World", "Crazy Diamond", "Killer Queen", "Gold Experience", "King Crimson", "Silver Chariot", "Hermit Purple", "The Hand", "Purple Haze", "Cream", "Hierophant Green", "Magician's Red", "White Album", "Aerosmith", "Six Pistols", "Beach Boy", "Mr. President", "Sticky Fingers", "Anubis", "Red Hot Chili Pepper", "Scary Monsters", "The World Alternate Universe", "D4C", "Tusk ACT 1", "Soft & Wet"}
+
+for _, stand in pairs(standNames) do
+    StandSelectSection:Toggle({
+        Flag = "Stand_" .. stand:gsub("%s", ""),
+        Title = stand,
+        Default = false,
+        Callback = function(State)
+            if State then
+                if not Util:FindTable("Stands", stand) then
+                    Util:InsertTable("Stands", stand)
+                end
+            else
+                Util:RemoveTable("Stands", stand)
+            end
+        end
+    })
+end
+
+local InfoSection = StandFarmTab:Section({
+    Title = "Stand Info"
+})
+
+local PityLabel = InfoSection:Label({
+    Title = "Pity: 0 (1%)"
+})
+
+local StandLabel = InfoSection:Label({
+    Title = "Stand: None"
+})
+
+local ShinyLabel = InfoSection:Label({
+    Title = "Shiny: None"
+})
+
+task.spawn(function()
+    while task.wait(1) do
+        pcall(function()
+            local pity = Util:GetPlayer().PlayerStats.PityCount.Value
+            PityLabel:UpdateAsset("Pity: " .. pity .. " (" .. ((pity * 0.04) + 1) .. "%)")
+            StandLabel:UpdateAsset("Stand: " .. Util:CheckStand())
+            ShinyLabel:UpdateAsset("Shiny: " .. (Util:CheckShiny() or "None"))
+        end)
+    end
+end)
+
+task.spawn(function()
+    while task.wait() do
+        if Util:GetState("Stand Farming") and Util:GetState("Arrow Pity Farm") then
+            local targetPity = Util:GetInt("Pity Amount")
+            local currentPity = Util:GetPlayer().PlayerStats.PityCount.Value
+            
+            if currentPity >= targetPity then
+                Util:GetPlayer():Kick("Reached target pity: " .. targetPity)
+            end
+            
+            if Util:HasStand() and currentPity < targetPity then
+                Util:UseRoka()
+                repeat task.wait() until not Util:HasStand()
+            elseif not Util:HasStand() then
+                Util:Stats()
+                Util:UseArrow()
+                repeat task.wait() until Util:HasStand()
+            end
+        end
+        
+        if Util:GetState("Rib Farm") and Util:GetState("Rib Pity Farm") then
+            local targetPity = Util:GetInt("Pity Amount")
+            local currentPity = Util:GetPlayer().PlayerStats.PityCount.Value
+            
+            if currentPity >= targetPity then
+                Util:GetPlayer():Kick("Reached target pity: " .. targetPity)
+            end
+            
+            Util:Stats()
+            Util:UseRib()
+            repeat task.wait() until Util:HasStand()
+        end
+    end
+end)
+
+Window:Notify({
+    Title = "Stand Farming",
+    Content = "Script loaded successfully!",
+    Icon = "check"
+})
