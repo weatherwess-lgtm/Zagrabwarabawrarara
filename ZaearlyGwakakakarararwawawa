@@ -186,7 +186,7 @@ AboutSection:Section({
 AboutSection:Button({
     Title = "Copy Discord Link",
     Callback = function()
-        setclipboard("Fuck You")
+        setclipboard("https://discord.gg/YevQvDZA")
         notify("Copied", "Discord link copied to clipboard!")
     end
 })
