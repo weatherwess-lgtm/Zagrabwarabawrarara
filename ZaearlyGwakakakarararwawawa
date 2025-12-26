@@ -186,7 +186,7 @@ AboutSection:Section({
 AboutSection:Button({
     Title = "Copy Discord Link",
     Callback = function()
-        setclipboard("https://discord.gg/YevQvDZA")
+        setclipboard("Fuck You")
         notify("Copied", "Discord link copied to clipboard!")
     end
 })
@@ -203,14 +203,15 @@ AboutSection:Section({
     TextTransparency = .35,
     FontWeight = Enum.FontWeight.Medium,
 })
-local FarmingTab = Window:Tab({ Title = "Farming", Icon = "skull" })
-local StandFarmTab = Window:Tab({ Title = "StandFarm", Icon = "star" })
+local FarmingTab = Window:Tab({ Title = "Item Farming", Icon = "skull" })
+local StandFarmTab = Window:Tab({ Title = "Pity Farm", Icon = "star" })
+local LevelFarmTab = Window:Tab({ Title = "Level Farm", Icon = "arrow-up" })
 local SBRTab = Window:Tab({ Title = "SBR", Icon = "sliders-horizontal" })
 local SellingTab = Window:Tab({ Title = "Selling", Icon = "dollar-sign" })
+local ShopTab = Window:Tab({ Title = "Shop", Icon = "shopping-cart" })
 local VisualTab = Window:Tab({ Title = "Visual", Icon = "eye" })
 local AdjustTab = Window:Tab({ Title = "Adjust", Icon = "sliders-horizontal" })
 local MiscTab = Window:Tab({ Title = "Misc", Icon = "zap" })
-local LevelFarmTab = Window:Tab({ Title = "Level Farm", Icon = "arrow-up" })
 local TrollingTab = Window:Tab({ Title = "Trolling", Icon = "smile" })
 local SettingsTab = Window:Tab({ Title = "Settings", Icon = "settings" })
 local player = game.Players.LocalPlayer
@@ -3259,6 +3260,196 @@ end
     end
 end)
 Window:SetToggleKey(Enum.KeyCode.K)
+
+--// Shop Feature (Converted to WindUI)
+do
+    -- Helper function to get character
+    local function getCharacter()
+        return player.Character or player.CharacterAdded:Wait()
+    end
+    
+    -- Items Section
+    local ItemsSection = ShopTab:Section({
+        Title = "Items"
+    })
+    
+    ItemsSection:Button({
+        Title = "Buy Rokakaka ($2,500)",
+        Callback = function()
+            getCharacter().RemoteEvent:FireServer("PurchaseShopItem", {["ItemName"] = "1x Rokakaka"}, 1, 2)
+            notify("YBA Script", "Bought Rokakaka")
+        end
+    })
+    
+    ItemsSection:Button({
+        Title = "Buy Pure Rokakaka ($4,000)",
+        Callback = function()
+            getCharacter().RemoteEvent:FireServer("PurchaseShopItem", {["ItemName"] = "1x Pure Rokakaka"}, 1, 2)
+            notify("YBA Script", "Bought Pure Rokakaka")
+        end
+    })
+    
+    ItemsSection:Button({
+        Title = "Buy Mysterious Arrow ($750)",
+        Callback = function()
+            getCharacter().RemoteEvent:FireServer("PurchaseShopItem", {["ItemName"] = "1x Mysterious Arrow"}, 1, 2)
+            notify("YBA Script", "Bought Mysterious Arrow")
+        end
+    })
+    
+    ItemsSection:Button({
+        Title = "Buy Lucky Arrow ($75,000)",
+        Callback = function()
+            getCharacter().RemoteEvent:FireServer("PurchaseShopItem", {["ItemName"] = "1x Lucky Arrow"}, 1, 2)
+            notify("YBA Script", "Bought Lucky Arrow")
+        end
+    })
+    
+    ItemsSection:Button({
+        Title = "Buy DIO's Diary ($20,000)",
+        Callback = function()
+            getCharacter().RemoteEvent:FireServer("PurchaseShopItem", {["ItemName"] = "1x DIO's Diary"}, 1, 2)
+            notify("YBA Script", "Bought DIO's Diary")
+        end
+    })
+    
+    ItemsSection:Button({
+        Title = "Buy Rib Cage ($3,500)",
+        Callback = function()
+            getCharacter().RemoteEvent:FireServer("PurchaseShopItem", {["ItemName"] = "1x Rib Cage of The Saint's Corpse"}, 1, 2)
+            notify("YBA Script", "Bought Rib Cage")
+        end
+    })
+    
+    ItemsSection:Button({
+        Title = "Buy Left Arm ($15,000)",
+        Callback = function()
+            getCharacter().RemoteEvent:FireServer("PurchaseShopItem", {["ItemName"] = "1x Left Arm of The Saint's Corpse"}, 1, 2)
+            notify("YBA Script", "Bought Left Arm")
+        end
+    })
+    
+    ItemsSection:Button({
+        Title = "Buy Pelvis ($45,000)",
+        Callback = function()
+            getCharacter().RemoteEvent:FireServer("PurchaseShopItem", {["ItemName"] = "1x Pelvis of The Saint's Corpse"}, 1, 2)
+            notify("YBA Script", "Bought Pelvis")
+        end
+    })
+    
+    ItemsSection:Button({
+        Title = "Buy Heart ($45,000)",
+        Callback = function()
+            getCharacter().RemoteEvent:FireServer("PurchaseShopItem", {["ItemName"] = "1x Heart of The Saint's Corpse"}, 1, 2)
+            notify("YBA Script", "Bought Heart")
+        end
+    })
+    
+    ItemsSection:Button({
+        Title = "Buy Mysterious Bow ($Idk?)",
+        Callback = function()
+            getCharacter().RemoteEvent:FireServer("EndDialogue", {["NPC"] = "Mysterious Bow Seller", ["Dialogue"] = "Dialogue4", ["Option"] = "Option1"})
+            notify("YBA Script", "Bought Mysterious Bow")
+        end
+    })
+    
+    ItemsSection:Button({
+        Title = "Buy Pizza ($50)",
+        Callback = function()
+            getCharacter().RemoteEvent:FireServer("EndDialogue", {["NPC"] = "Pizza", ["Option"] = "Option1", ["Dialogue"] = "Dialogue2"}, 1, 2)
+            notify("YBA Script", "Bought Pizza")
+        end
+    })
+    
+    ItemsSection:Button({
+        Title = "Buy Tea ($50)",
+        Callback = function()
+            getCharacter().RemoteEvent:FireServer("EndDialogue", {["NPC"] = "Cafe", ["Option"] = "Option1", ["Dialogue"] = "Dialogue2"}, 1, 2)
+            notify("YBA Script", "Bought Tea")
+        end
+    })
+    
+    ShopTab:Space()
+    
+    -- Fighting Styles Section
+    local SpecsSection = ShopTab:Section({
+        Title = "Fighting Styles"
+    })
+    
+    SpecsSection:Button({
+        Title = "Buy Hamon ($15,000)",
+        Callback = function()
+            getCharacter().RemoteEvent:FireServer("EndDialogue", {["Dialogue"] = "Dialogue5", ["NPC"] = "Jonathan", ["Option"] = "Option1"})
+            notify("YBA Script", "Bought Hamon")
+        end
+    })
+    
+    SpecsSection:Button({
+        Title = "Buy Boxing ($10,000)",
+        Callback = function()
+            getCharacter().RemoteEvent:FireServer("EndDialogue", {["Dialogue"] = "Dialogue5", ["NPC"] = "Quinton", ["Option"] = "Option1"})
+            notify("YBA Script", "Bought Boxing")
+        end
+    })
+    
+    SpecsSection:Button({
+        Title = "Buy Spin ($10,000)",
+        Callback = function()
+            getCharacter().RemoteEvent:FireServer("EndDialogue", {["Dialogue"] = "Dialogue5", ["NPC"] = "Gyro", ["Option"] = "Option1"})
+            notify("YBA Script", "Bought Spin")
+        end
+    })
+    
+    SpecsSection:Button({
+        Title = "Buy Vampire ($10,000)",
+        Callback = function()
+            getCharacter().RemoteEvent:FireServer("EndDialogue", {["Dialogue"] = "Dialogue5", ["NPC"] = "Elder Vampire Roomy", ["Option"] = "Option1"})
+            notify("YBA Script", "Bought Vampire")
+        end
+    })
+    
+    SpecsSection:Button({
+        Title = "Buy Pluck ($10,000)",
+        Callback = function()
+            getCharacter().RemoteEvent:FireServer("EndDialogue", {["Dialogue"] = "Dialogue5", ["NPC"] = "Uzurashi", ["Option"] = "Option1"})
+            notify("YBA Script", "Bought Pluck")
+        end
+    })
+    
+    SpecsSection:Button({
+        Title = "Buy Boxing Gloves ($1,000)",
+        Callback = function()
+            getCharacter().RemoteEvent:FireServer("EndDialogue", {["Dialogue"] = "Dialogue1", ["NPC"] = "Boxing Gloves", ["Option"] = "Option1"})
+            notify("YBA Script", "Bought Boxing Gloves")
+        end
+    })
+    
+    SpecsSection:Button({
+        Title = "Buy Sword ($1,000)",
+        Callback = function()
+            getCharacter().RemoteEvent:FireServer("EndDialogue", {["Dialogue"] = "Dialogue1", ["NPC"] = "Pluck", ["Option"] = "Option1"})
+            notify("YBA Script", "Bought Sword")
+        end
+    })
+    
+    ShopTab:Space()
+    
+    -- Special Dialogues Section
+    local DialoguesSection = ShopTab:Section({
+        Title = "Special Dialogues"
+    })
+    
+    -- Only add Halloween Event (Jesus is already in MiscTab)
+    DialoguesSection:Button({
+        Title = "Halloween Event Dialogue",
+        Callback = function()
+            getCharacter().RemoteEvent:FireServer("PromptTriggered", game.ReplicatedStorage.NewDialogue:FindFirstChild("Halloween Event"))
+            notify("YBA Script", "Opened Halloween Shop")
+        end
+    })
+    
+    notify("YBA Script", "Shop tab loaded successfully!")
+end
 
 local Util = {
     States = {};
